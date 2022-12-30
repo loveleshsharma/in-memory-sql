@@ -12,6 +12,7 @@ var (
 type Table struct {
 	name       string
 	columnsMap map[string]*column
+	rows       []*row
 
 	rowsCounter int64
 }
@@ -40,68 +41,74 @@ func (t *Table) AddColumn(name string, dataType DataType, constraints []Constrai
 
 func (t *Table) SelectAll() map[string][]interface{} {
 	allColumnsData := make(map[string][]interface{})
-	for k, v := range t.columnsMap {
-		allColumnsData[k] = v.getAllValues()
+
+	for _, r := range t.rows {
+		dataMap := r.getDataMap()
+		for k, v := range dataMap {
+			allColumnsData[k] = append(allColumnsData[k], v)
+		}
 	}
 
 	return allColumnsData
 }
 
-func (t *Table) Insert(data map[string]interface{}) error {
-	newRow := t.createNewRow()
+func (t *Table) InsertRow(dataMap map[string]interface{}) error {
+	newRow := newEmptyRow()
+
+	//iterating all the column in a table
+	for colName, col := range t.columnsMap {
+		data, ok := dataMap[colName]
+		if ok {
+			if err := t.validateConstraints(col, data); err != nil {
+				return err
+			}
+
+			if err := col.validateDataType(data); err != nil {
+				return err
+			}
+
+			newRow.setValue(colName, data)
+
+			delete(dataMap, colName)
+		} else {
+			if !col.isNullable() {
+				return errors.New(fmt.Sprintf("column %s is not nullable!", col.getColumnName()))
+			}
+		}
+
+	}
+
+	for colName := range dataMap {
+		return errors.New(fmt.Sprintf("column %s not found!", colName))
+	}
+
+	//at this point the insertion was accepted
 	t.rowsCounter++
+	newRow.build(t.rowsCounter)
+	t.rows = append(t.rows, newRow)
 
-	for k, v := range data {
-		currColumn, err := t.getColumnByName(k)
-		if err != nil {
-			//column not found
-			t.rowsCounter--
-			return ErrColumnNotFound
-		}
-
-		if err = currColumn.insertData(v, t.rowsCounter); err != nil {
-			return err
-		}
-
-		delete(newRow, k)
-	}
-
-	//iterating remaining items in the row that were not inserted to check if they were not nullable
-	for _, v := range newRow {
-		if !v.isNullable() {
-			return errors.New("column " + v.getColumnName() + " is not nullable")
-		}
-	}
-
-	fmt.Println("insert was successful")
 	return nil
 }
 
-func (t *Table) createNewRow() map[string]column {
-	row := make(map[string]column, len(t.columnsMap))
+func (t *Table) validateConstraints(col *column, data interface{}) error {
+	constraints := col.getConstraints()
 
-	i := 0
-	for k, v := range t.columnsMap {
-		row[k] = *v
-		i++
+	for _, constraint := range constraints {
+		switch constraint {
+		case NotNullConstraintType:
+			if data == nil {
+				return errors.New(fmt.Sprintf("%s voilated!", constraint.String()))
+			}
+
+		case UniqueConstraintType:
+			for _, r := range t.rows {
+				colData := r.getDataByColumn(col.getColumnName())
+				if colData == data {
+					return errors.New(fmt.Sprintf("%s voilated!", constraint.String()))
+				}
+			}
+		}
 	}
 
-	return row
+	return nil
 }
-
-func (t *Table) getColumnByName(name string) (*column, error) {
-	val, ok := t.columnsMap[name]
-	if !ok {
-		return nil, errors.New("column not found")
-	}
-
-	return val, nil
-}
-
-/*
-	create table employee(
-		empName varchar2(1000) not null unique
-	);
-
-	insert into employee(empName, salary) values('Lovelesh', 100);
-*/

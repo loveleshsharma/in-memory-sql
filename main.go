@@ -19,17 +19,17 @@ func main() {
 	empTable.AddColumn("empId", table.NumberDataType, []table.Constraint{table.UniqueConstraintType}).
 		AddColumn("empName", table.VarcharDataType, []table.Constraint{table.NotNullConstraintType})
 
-	empTable.Insert(map[string]interface{}{
+	empTable.InsertRow(map[string]interface{}{
 		"empId":   int64(1),
 		"empName": "Lovelesh",
 	})
 
-	err := empTable.Insert(map[string]interface{}{
+	err := empTable.InsertRow(map[string]interface{}{
 		"empId":   int64(2),
 		"empName": "mahima",
 	})
 
-	err = empTable.Insert(map[string]interface{}{
+	err = empTable.InsertRow(map[string]interface{}{
 		"empId":   int64(3),
 		"empName": "Khushvii",
 	})
@@ -40,5 +40,4 @@ func main() {
 	}
 
 	fmt.Printf("%v", empTable.SelectAll())
-
 }
