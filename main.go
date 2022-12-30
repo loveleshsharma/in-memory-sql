@@ -29,8 +29,14 @@ func main() {
 		"empName": "mahima",
 	})
 
+	err = empTable.Insert(map[string]interface{}{
+		"empId":   int64(3),
+		"empName": "Khushvii",
+	})
+
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 
 	fmt.Printf("%v", empTable.SelectAll())

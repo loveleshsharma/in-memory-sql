@@ -2,7 +2,6 @@ package table
 
 import (
 	"errors"
-	"fmt"
 )
 
 type column struct {
@@ -23,7 +22,6 @@ func NewColumn(name string, dataType DataType, constraints []Constraint) *column
 }
 
 func (c *column) insertData(data interface{}, index int64) error {
-	fmt.Println("data ", data)
 	if err := c.satisfiesConstraints(data); err != nil {
 		return err
 	}

@@ -54,7 +54,7 @@ func (t *Table) Insert(data map[string]interface{}) error {
 	for k, v := range data {
 		currColumn, err := t.getColumnByName(k)
 		if err != nil {
-			fmt.Println("column not found")
+			//column not found
 			t.rowsCounter--
 			return ErrColumnNotFound
 		}
