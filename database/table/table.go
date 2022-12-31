@@ -82,6 +82,24 @@ func (t *Table) InsertRow(dataMap map[string]interface{}) error {
 	return nil
 }
 
+func (t *Table) DeleteRow(colName string, value interface{}) error {
+
+	for idx, row := range t.rows {
+		data, err := row.getDataByColumn(colName)
+		if err != nil {
+			return ErrColumnNotFound
+		}
+
+		if data == value {
+			t.rows = append(t.rows[:idx], t.rows[idx+1:]...)
+			return nil
+		}
+	}
+
+	fmt.Println("no rows deleted")
+	return nil
+}
+
 func (t *Table) validateConstraints(col *column, data interface{}) error {
 	constraints := col.getConstraints()
 
@@ -94,7 +112,10 @@ func (t *Table) validateConstraints(col *column, data interface{}) error {
 
 		case UniqueConstraintType:
 			for _, r := range t.rows {
-				colData := r.getDataByColumn(col.getColumnName())
+				colData, err := r.getDataByColumn(col.getColumnName())
+				if err != nil {
+					return ErrColumnNotFound
+				}
 				if colData == data {
 					return errors.New(fmt.Sprintf("%s voilated!", constraint.String()))
 				}

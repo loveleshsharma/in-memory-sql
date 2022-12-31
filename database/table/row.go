@@ -15,8 +15,13 @@ func (r *row) getDataMap() map[string]interface{} {
 	return r.dataMap
 }
 
-func (r *row) getDataByColumn(colName string) interface{} {
-	return r.dataMap[colName]
+func (r *row) getDataByColumn(colName string) (interface{}, error) {
+	data, ok := r.dataMap[colName]
+	if !ok {
+		return nil, ErrColumnNotFound
+	}
+
+	return data, nil
 }
 
 func (r *row) setValue(column string, data interface{}) {

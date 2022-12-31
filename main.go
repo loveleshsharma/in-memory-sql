@@ -39,5 +39,10 @@ func main() {
 		return
 	}
 
+	if err = empTable.DeleteRow("empName", "Lovelesh"); err != nil {
+		fmt.Println(err)
+		return
+	}
+
 	fmt.Printf("%v", empTable.SelectAll())
 }
