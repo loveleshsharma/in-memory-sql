@@ -17,14 +17,6 @@ type Table struct {
 	rowsCounter int64
 }
 
-func NewTable(name string) Table {
-	return Table{
-		name:        name,
-		columnsMap:  nil,
-		rowsCounter: 0,
-	}
-}
-
 func CreateTable(name string) *Table {
 	return &Table{
 		name:        name,
