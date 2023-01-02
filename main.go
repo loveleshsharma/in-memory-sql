@@ -10,6 +10,10 @@ import (
 		Components:
 			1. Database -> It will hold the tables
 			2. SQL -> It will take commands from user and translate them and query the database
+
+		Nice to have features:
+			1. Add functionality to have AND and OR conditionals for update method
+			2. Updating row via primary key(Primary key concept)
 */
 
 func main() {
@@ -43,6 +47,10 @@ func main() {
 		fmt.Println(err)
 		return
 	}
+
+	empTable.Update(map[string]interface{}{
+		"empName": "KHUSHVII",
+	}, "empName", "Khushvii")
 
 	fmt.Printf("%v", empTable.SelectAll())
 }

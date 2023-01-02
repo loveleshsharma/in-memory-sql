@@ -83,7 +83,6 @@ func (t *Table) InsertRow(dataMap map[string]interface{}) error {
 }
 
 func (t *Table) DeleteRow(colName string, value interface{}) error {
-
 	for idx, row := range t.rows {
 		data, err := row.getDataByColumn(colName)
 		if err != nil {
@@ -97,6 +96,23 @@ func (t *Table) DeleteRow(colName string, value interface{}) error {
 	}
 
 	fmt.Println("no rows deleted")
+	return nil
+}
+
+func (t *Table) Update(valuesMap map[string]interface{}, whereCol, whereVal string) error {
+	for _, row := range t.rows {
+		data, err := row.getDataByColumn(whereCol)
+		if err != nil {
+			return ErrColumnNotFound
+		}
+
+		if data == whereVal {
+			value := valuesMap[whereCol]
+			row.setValue(whereCol, value)
+		}
+
+	}
+
 	return nil
 }
 
